@@ -57,6 +57,38 @@ def fix_pronunciation(text: str) -> str:
     # Do NOT insert SSML tags because edge-tts escapes < and > by default, causing them to be read aloud.
     return text
 
+def improve_prosody(text: str) -> str:
+    """Improves natural pacing by adding punctuation for TTS to breathe."""
+    text = text.strip()
+    if not text:
+        return text
+    
+    # Force a period at the end if there's no punctuation, allowing the TTS to drop pitch naturally
+    if text[-1] not in '.!?\"\'':
+        text += '.'
+        
+    # Heuristic for long sentences: Add commas before certain conjunctions to create natural pauses
+    conjunctions = ['nhưng', 'và', 'mà', 'hoặc', 'nên', 'cho nên', 'bởi vì', 'tuy nhiên', 'do đó', 'mặc dù']
+    
+    sentences = re.split(r'(?<=[.!?]) +', text)
+    processed_sentences = []
+    
+    for s in sentences:
+        words = s.split()
+        if len(words) > 12: # Threshold for a "long" sentence
+            for conj in conjunctions:
+                # Add comma if not already preceded by one
+                pattern = r'(?<![,.!?])\s+\b' + conj + r'\b'
+                s = re.sub(pattern, f', {conj}', s)
+        processed_sentences.append(s)
+        
+    text = ' '.join(processed_sentences)
+    
+    # Handle ellipses and dashes to force a thoughtful pause
+    text = re.sub(r'\s*-\s*', ' - ', text)
+    
+    return text
+
 def process_text(raw_text: str) -> str:
     lines = raw_text.split('\n')
     parts = []
@@ -69,7 +101,9 @@ def process_text(raw_text: str) -> str:
         if m:
             continue
         parts.append(line)
-    return " ".join(parts)
+        
+    joined_text = " ".join(parts)
+    return improve_prosody(joined_text)
 
 @app.post("/api/generate")
 async def generate_audio(req: GenerateRequest):
