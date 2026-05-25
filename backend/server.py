@@ -46,63 +46,16 @@ def clean(line: str) -> str:
     line = line.replace('\uFE0F', '').replace('\u200B', '')
     return line.strip()
 
-_vowels = [
-    'a', 'ai', 'ao', 'au', 'ay', 'am', 'an', 'ang', 'anh', 'ap', 'at', 'ac', 'ach',
-    'e', 'eo', 'em', 'en', 'eng', 'ep', 'et', 'ec',
-    'i', 'ia', 'ieu', 'iu', 'im', 'in', 'inh', 'ip', 'it', 'ic', 'ich',
-    'o', 'oa', 'oac', 'oai', 'oan', 'oang', 'oanh', 'oao', 'oap', 'oat', 'oay', 'oc', 'oe', 'oeo', 'oi', 'om', 'on', 'ong', 'oo', 'ooc', 'oong', 'op', 'ot',
-    'u', 'ua', 'uan', 'uang', 'uat', 'uay', 'uc', 'ue', 'ui', 'um', 'un', 'ung', 'uo', 'uoc', 'uoi', 'uom', 'uon', 'uong', 'uop', 'uot',
-    'uy', 'uya', 'uych', 'uyen', 'uyet', 'uynh', 'uyp', 'uyu',
-    'y', 'ye', 'yem', 'yen', 'yeng', 'yeu'
-]
-_initials = ['b', 'c', 'ch', 'd', 'đ', 'g', 'gh', 'h', 'k', 'kh', 'l', 'm', 'n', 'ng', 'ngh', 'nh', 'p', 'ph', 'qu', 'r', 's', 't', 'th', 'tr', 'v', 'x', '']
-_valid_syllables = set(i + v for i in _initials for v in _vowels)
-_valid_syllables.update(['gi', 'gia', 'giai', 'giao', 'giay', 'giam', 'gian', 'giang', 'giap', 'giat', 'giac', 'gie', 'gieo', 'giem', 'gien', 'giep', 'giet', 'giec', 'gio', 'gioi', 'giom', 'gion', 'giong', 'giop', 'giot', 'gioc', 'giu', 'giua', 'giui', 'gium', 'giun', 'giung', 'giup', 'giut', 'giuc'])
-
-def is_english_word(w: str) -> bool:
-    if not w.isascii() or not w.isalpha(): return False
-    if w.isupper() and len(w) >= 2: return True
-    w = w.lower()
-    eng_overlaps = {'mac', 'pro', 'ban', 'van', 'ram', 'rom', 'host', 'post', 'can', 'men', 'man', 'fan', 'pan', 'pin', 'pen', 'tin', 'top', 'hot', 'set', 'win', 'box', 'log'}
-    if w in eng_overlaps: return True
-    if w not in _valid_syllables: return True
-    return False
-
 def fix_pronunciation(text: str) -> str:
+    # Fix dates
     text = re.sub(r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b', r'ngày \1 tháng \2 năm \3', text)
+    # Fix some specific acronyms that we DO want in Vietnamese 
+    # (Optional: đô-la -> đô la)
     text = re.sub(r'\bđô-la\b', 'đô la', text, flags=re.IGNORECASE)
     
-    tokens = re.findall(r'\w+|\W+', text)
-    result = []
-    in_eng = False
-    
-    for token in tokens:
-        if re.match(r'^\w+$', token):
-            if is_english_word(token):
-                if not in_eng:
-                    result.append('<lang xml:lang="en-US">')
-                    in_eng = True
-                result.append(token)
-            else:
-                if in_eng:
-                    result.append('</lang>')
-                    in_eng = False
-                result.append(token)
-        else:
-            if in_eng:
-                if token.isspace() or token in ['-', '\'']:
-                    result.append(token)
-                else:
-                    result.append('</lang>')
-                    in_eng = False
-                    result.append(token)
-            else:
-                result.append(token)
-                
-    if in_eng:
-        result.append('</lang>')
-        
-    return "".join(result)
+    # We rely on the native Edge-TTS multi-lingual models to correctly pronounce English words.
+    # Do NOT insert SSML tags because edge-tts escapes < and > by default, causing them to be read aloud.
+    return text
 
 def process_text(raw_text: str) -> str:
     lines = raw_text.split('\n')
