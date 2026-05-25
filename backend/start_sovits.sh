@@ -11,5 +11,5 @@ fi
 source venv/bin/activate
 
 # Khởi động api.py
-# Lưu ý: -d cpu được sử dụng làm mặc định vì model MPS trên Mac có thể bị lỗi với một số pipeline. Bạn có thể thử đổi thành -d mps nếu cấu hình mạnh.
-python api.py -a 127.0.0.1 -p 9880 -d cpu
+# Lưu ý: -d mps được sử dụng làm mặc định vì model MPS trên Mac có thể bị lỗi với một số pipeline. Bạn có thể thử đổi thành -d mps nếu cấu hình mạnh.
+python api.py -a 127.0.0.1 -p 9880 -d mps
