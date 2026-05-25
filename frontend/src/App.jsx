@@ -10,6 +10,7 @@ const VOICE_PRESETS = [
   { id: 'namminh-adam', name: 'Adam', style: 'Hài hước', gender: 'nam', tags: ['Nam', 'Hài hước', 'Nhanh', 'Miền Bắc'], voice: 'vi-VN-NamMinhNeural', rate: '+25%', pitch: '+0Hz', description: 'Giọng nam cực nhanh, nhí nhảnh, tấu hài.' },
   { id: 'hoaimy-slow', name: 'Truyện Audio', style: 'Kể chuyện', gender: 'nữ', tags: ['Nữ', 'Truyện', 'Chậm rãi', 'Miền Bắc'], voice: 'vi-VN-HoaiMyNeural', rate: '-5%', pitch: '-3Hz', description: 'Giọng nữ nhẹ nhàng, phù hợp đọc truyện, sách nói.' },
   { id: 'namminh-news', name: 'Quang Anh', style: 'Thời sự VTV', gender: 'nam', tags: ['Nam', 'Tin tức', 'Thời sự', 'Miền Bắc'], voice: 'vi-VN-NamMinhNeural', rate: '+3%', pitch: '-3Hz', description: 'Style thời sự, VTV, đọc báo chuyên nghiệp.' },
+  { id: 'sovits-clone-1', name: 'Giọng Vlogs (AI)', engine: 'gpt-sovits', style: 'Clone Voice', gender: 'nam', tags: ['AI Clone', 'Tự nhiên'], voice: 'sovits-1', rate: '+0%', pitch: '+0Hz', description: 'Giọng AI cực kỳ tự nhiên, sao chép bằng GPT-SoVITS.', ref_audio_path: 'sovits_refs/demo.wav', ref_text: 'Đây là giọng mẫu.', ref_lang: 'vi', text_lang: 'vi' }
 ];
 
 const API = 'http://127.0.0.1:8000';
@@ -125,7 +126,17 @@ function App() {
     try {
       const res = await fetch(`${API}/api/generate`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: block.text, voice: preset.voice, rate: preset.rate, pitch: preset.pitch })
+        body: JSON.stringify({ 
+          text: block.text, 
+          voice: preset.voice, 
+          rate: preset.rate, 
+          pitch: preset.pitch,
+          engine: preset.engine || "edge-tts",
+          ref_audio_path: preset.ref_audio_path || "",
+          ref_text: preset.ref_text || "",
+          ref_lang: preset.ref_lang || "vi",
+          text_lang: preset.text_lang || "vi"
+        })
       });
       if (!res.ok) throw new Error('err');
       const data = await res.json();
@@ -196,7 +207,18 @@ function App() {
     stopPreview(); setPreviewingId(preset.id);
     try {
       const res = await fetch(`${API}/api/preview`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: '', voice: preset.voice, rate: preset.rate, pitch: preset.pitch }) });
+        body: JSON.stringify({ 
+          text: '', 
+          voice: preset.voice, 
+          rate: preset.rate, 
+          pitch: preset.pitch,
+          engine: preset.engine || "edge-tts",
+          ref_audio_path: preset.ref_audio_path || "",
+          ref_text: preset.ref_text || "",
+          ref_lang: preset.ref_lang || "vi",
+          text_lang: preset.text_lang || "vi"
+        }) 
+      });
       if (!res.ok) throw new Error('err');
       const data = await res.json();
       const audio = new Audio(`${API}${data.audioUrl}?t=${Date.now()}`);
@@ -405,8 +427,14 @@ function App() {
         {(activePage === 'my-voices') && (
           <div className="page-voices">
             <h1 className="page-title">Giọng nói của bạn</h1>
-            <p className="page-subtitle">Các giọng nói bạn đã tùy chỉnh</p>
-            <div className="empty-state">Chưa có giọng nói tùy chỉnh nào.</div>
+            <p className="page-subtitle">Sao chép giọng nói của bạn bằng công nghệ GPT-SoVITS</p>
+            <div className="clone-voice-box">
+              <div className="clone-icon">🎙️</div>
+              <h3>Thêm Giọng Nói Mới</h3>
+              <p>Tải lên một đoạn ghi âm dài 3-10 giây để AI sao chép giọng điệu và chất giọng của bạn.</p>
+              <button className="btn-upload" disabled>Tải lên Audio (.wav, .mp3)</button>
+              <p className="text-muted" style={{marginTop: '10px', fontSize: '12px'}}>(Tính năng đang được phát triển - Đợi API từ backend)</p>
+            </div>
           </div>
         )}
       </main>
@@ -427,7 +455,12 @@ function App() {
                 return (
                   <div key={preset.id} className={`vm-card ${isSelected ? 'selected' : ''}`} onClick={() => selectVoice(preset.id)}>
                     <div className="vm-card-info">
-                      <h3>{preset.name} ({preset.style})</h3>
+                      <h3>
+                        {preset.name} ({preset.style})
+                        {preset.engine === 'gpt-sovits' ? 
+                          <span className="engine-badge sovits">GPT-SoVITS</span> : 
+                          <span className="engine-badge edge">Edge-TTS</span>}
+                      </h3>
                       <p>{preset.description}</p>
                       <div className="vm-card-tags">
                         {preset.tags.map(t => <span key={t} className={`vm-tag ${t === 'Nam' || t === 'Nữ' ? 'gender' : ''}`}>{t}</span>)}

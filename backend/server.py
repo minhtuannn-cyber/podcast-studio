@@ -29,6 +29,11 @@ class GenerateRequest(BaseModel):
     voice: str = "vi-VN-HoaiMyNeural"
     rate: str = "+5%"
     pitch: str = "+0Hz"
+    engine: str = "edge-tts"
+    ref_audio_path: str = ""
+    ref_text: str = ""
+    ref_lang: str = "vi"
+    text_lang: str = "vi"
 
 class MergeRequest(BaseModel):
     filenames: List[str]
@@ -114,7 +119,7 @@ async def generate_audio(req: GenerateRequest):
     if not final_text.strip():
         raise HTTPException(status_code=400, detail="Text contains no valid words after cleaning")
 
-    hash_input = f"{final_text}|{req.voice}|{req.rate}|{req.pitch}"
+    hash_input = f"{final_text}|{req.voice}|{req.rate}|{req.pitch}|{req.engine}|{req.ref_audio_path}"
     text_hash = hashlib.md5(hash_input.encode('utf-8')).hexdigest()
     output_filename = f"audio_{text_hash}.mp3"
     output_path = os.path.join(OUTPUT_DIR, output_filename)
@@ -123,8 +128,32 @@ async def generate_audio(req: GenerateRequest):
         return {"audioUrl": f"/api/audio/{output_filename}"}
 
     try:
-        communicate = edge_tts.Communicate(final_text, req.voice, rate=req.rate, pitch=req.pitch)
-        await communicate.save(output_path)
+        if req.engine == "gpt-sovits":
+            import httpx
+            from pydub import AudioSegment
+            import io
+            
+            # API URL cho GPT-SoVITS mặc định ở port 9880
+            url = "http://127.0.0.1:9880/"
+            params = {
+                "text": final_text,
+                "text_language": req.text_lang,
+                "prompt_text": req.ref_text,
+                "prompt_language": req.ref_lang,
+                "prompt_audio": req.ref_audio_path
+            }
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                res = await client.get(url, params=params)
+                if res.status_code != 200:
+                    raise Exception(f"GPT-SoVITS API error: {res.text}")
+                
+                # SoVITS trả về WAV. Chúng ta chuyển thành MP3 cho đồng nhất.
+                audio_data = io.BytesIO(res.content)
+                audio_seg = AudioSegment.from_file(audio_data)
+                audio_seg.export(output_path, format="mp3", bitrate="128k")
+        else:
+            communicate = edge_tts.Communicate(final_text, req.voice, rate=req.rate, pitch=req.pitch)
+            await communicate.save(output_path)
     except Exception as e:
         print(f"TTS ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -135,7 +164,7 @@ async def generate_audio(req: GenerateRequest):
 async def preview_voice(req: GenerateRequest):
     """Generate a short preview sample for a voice."""
     sample_text = "Xin chào, đây là giọng đọc mẫu của tôi."
-    hash_input = f"preview|{req.voice}|{req.rate}|{req.pitch}"
+    hash_input = f"preview|{req.voice}|{req.rate}|{req.pitch}|{req.engine}|{req.ref_audio_path}"
     text_hash = hashlib.md5(hash_input.encode('utf-8')).hexdigest()
     output_filename = f"preview_{text_hash}.mp3"
     output_path = os.path.join(OUTPUT_DIR, output_filename)
@@ -144,8 +173,29 @@ async def preview_voice(req: GenerateRequest):
         return {"audioUrl": f"/api/audio/{output_filename}"}
 
     try:
-        communicate = edge_tts.Communicate(sample_text, req.voice, rate=req.rate, pitch=req.pitch)
-        await communicate.save(output_path)
+        if req.engine == "gpt-sovits":
+            import httpx
+            from pydub import AudioSegment
+            import io
+            
+            url = "http://127.0.0.1:9880/"
+            params = {
+                "text": sample_text,
+                "text_language": req.text_lang,
+                "prompt_text": req.ref_text,
+                "prompt_language": req.ref_lang,
+                "prompt_audio": req.ref_audio_path
+            }
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                res = await client.get(url, params=params)
+                if res.status_code != 200:
+                    raise Exception(f"GPT-SoVITS API error: {res.text}")
+                audio_data = io.BytesIO(res.content)
+                audio_seg = AudioSegment.from_file(audio_data)
+                audio_seg.export(output_path, format="mp3", bitrate="128k")
+        else:
+            communicate = edge_tts.Communicate(sample_text, req.voice, rate=req.rate, pitch=req.pitch)
+            await communicate.save(output_path)
     except Exception as e:
         print(f"TTS PREVIEW ERROR: {e}")
         raise HTTPException(status_code=500, detail=str(e))
