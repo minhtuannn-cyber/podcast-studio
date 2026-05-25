@@ -46,45 +46,63 @@ def clean(line: str) -> str:
     line = line.replace('\uFE0F', '').replace('\u200B', '')
     return line.strip()
 
+_vowels = [
+    'a', 'ai', 'ao', 'au', 'ay', 'am', 'an', 'ang', 'anh', 'ap', 'at', 'ac', 'ach',
+    'e', 'eo', 'em', 'en', 'eng', 'ep', 'et', 'ec',
+    'i', 'ia', 'ieu', 'iu', 'im', 'in', 'inh', 'ip', 'it', 'ic', 'ich',
+    'o', 'oa', 'oac', 'oai', 'oan', 'oang', 'oanh', 'oao', 'oap', 'oat', 'oay', 'oc', 'oe', 'oeo', 'oi', 'om', 'on', 'ong', 'oo', 'ooc', 'oong', 'op', 'ot',
+    'u', 'ua', 'uan', 'uang', 'uat', 'uay', 'uc', 'ue', 'ui', 'um', 'un', 'ung', 'uo', 'uoc', 'uoi', 'uom', 'uon', 'uong', 'uop', 'uot',
+    'uy', 'uya', 'uych', 'uyen', 'uyet', 'uynh', 'uyp', 'uyu',
+    'y', 'ye', 'yem', 'yen', 'yeng', 'yeu'
+]
+_initials = ['b', 'c', 'ch', 'd', 'đ', 'g', 'gh', 'h', 'k', 'kh', 'l', 'm', 'n', 'ng', 'ngh', 'nh', 'p', 'ph', 'qu', 'r', 's', 't', 'th', 'tr', 'v', 'x', '']
+_valid_syllables = set(i + v for i in _initials for v in _vowels)
+_valid_syllables.update(['gi', 'gia', 'giai', 'giao', 'giay', 'giam', 'gian', 'giang', 'giap', 'giat', 'giac', 'gie', 'gieo', 'giem', 'gien', 'giep', 'giet', 'giec', 'gio', 'gioi', 'giom', 'gion', 'giong', 'giop', 'giot', 'gioc', 'giu', 'giua', 'giui', 'gium', 'giun', 'giung', 'giup', 'giut', 'giuc'])
+
+def is_english_word(w: str) -> bool:
+    if not w.isascii() or not w.isalpha(): return False
+    if w.isupper() and len(w) >= 2: return True
+    w = w.lower()
+    eng_overlaps = {'mac', 'pro', 'ban', 'van', 'ram', 'rom', 'host', 'post', 'can', 'men', 'man', 'fan', 'pan', 'pin', 'pen', 'tin', 'top', 'hot', 'set', 'win', 'box', 'log'}
+    if w in eng_overlaps: return True
+    if w not in _valid_syllables: return True
+    return False
+
 def fix_pronunciation(text: str) -> str:
     text = re.sub(r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b', r'ngày \1 tháng \2 năm \3', text)
-    dict_pronun = {
-        r'\bAI\b': 'Ây Ai',
-        r'\bOpenAI\b': 'Ô pần Ây Ai',
-        r'\bI/O\b': 'Ai Âu',
-        r'\bGemini\b': 'Gie mi ni',
-        r'\bChatGPT\b': 'Chát gi bi ti',
-        r'\bCEO\b': 'Xi y âu',
-        r'\bSeries C\b': 'Xi-ri Xi',
-        r'\bSeries D\b': 'Xi-ri Đi',
-        r'\bstartup\b': 'xờ-tát-ắp',
-        r'\bstartups\b': 'xờ-tát-ắp',
-        r'\bSequoia\b': 'Sê-coi-a',
-        r'\bfintech\b': 'Phin-tếch',
-        r'\bOscar\b': 'Ốt-xca',
-        r'\breMarkable\b': 'Ri-mác-kơ-bồ',
-        r'\bBluetooth\b': 'Bờ-lu-tút',
-        r'\bJBL\b': 'Giây-bi-eo',
-        r'\bOLED\b': 'Ô-lét',
-        r'\bLG\b': 'Eo-gi',
-        r'\bOmni\b': 'Ôm-ni',
-        r'\bFlash\b': 'P-lát',
-        r'\bSpark\b': 'Xờ-pác',
-        r'\bSearch\b': 'Sớt',
-        r'\bAds Manager\b': 'Át Ma-na-giơ',
-        r'\bMeta\b': 'Mê-ta',
-        r'\bExa\b': 'Ếch-xa',
-        r'\bModal\b': 'Mô-đờ',
-        r'\bMercury\b': 'Mơ-ciu-ri',
-        r'\bParallel Web Systems\b': 'Pa-ra-leo Web Sít-tầm',
-        r'\bParag Agrawal\b': 'Pa-rác A-gra-goan',
-        r'\bPaper Pure\b': 'Pây-pờ Piu-ờ',
-        r'\bXtreme\b': 'Ích-xtrim',
-        r'\bđô-la\b': 'đô la'
-    }
-    for pattern, replacement in dict_pronun.items():
-        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-    return text
+    text = re.sub(r'\bđô-la\b', 'đô la', text, flags=re.IGNORECASE)
+    
+    tokens = re.findall(r'\w+|\W+', text)
+    result = []
+    in_eng = False
+    
+    for token in tokens:
+        if re.match(r'^\w+$', token):
+            if is_english_word(token):
+                if not in_eng:
+                    result.append('<lang xml:lang="en-US">')
+                    in_eng = True
+                result.append(token)
+            else:
+                if in_eng:
+                    result.append('</lang>')
+                    in_eng = False
+                result.append(token)
+        else:
+            if in_eng:
+                if token.isspace() or token in ['-', '\'']:
+                    result.append(token)
+                else:
+                    result.append('</lang>')
+                    in_eng = False
+                    result.append(token)
+            else:
+                result.append(token)
+                
+    if in_eng:
+        result.append('</lang>')
+        
+    return "".join(result)
 
 def process_text(raw_text: str) -> str:
     lines = raw_text.split('\n')
