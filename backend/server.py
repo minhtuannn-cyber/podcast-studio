@@ -137,9 +137,9 @@ async def generate_audio(req: GenerateRequest):
             url = "http://127.0.0.1:9880/"
             params = {
                 "text": final_text,
-                "text_language": req.text_lang,
+                "text_language": "多语种混合",
                 "prompt_text": req.ref_text,
-                "prompt_language": req.ref_lang,
+                "prompt_language": "多语种混合",
                 "refer_wav_path": req.ref_audio_path
             }
             async with httpx.AsyncClient(timeout=120.0) as client:
