@@ -178,12 +178,14 @@ async def preview_voice(req: GenerateRequest):
             from pydub import AudioSegment
             import io
             
+            # GPT-SoVITS api.py dict_language uses Chinese keys: "中文", "英文", "日文", "多语种混合"
+            # We map any non-supported language to "多语种混合" (Auto/Multilingual)
             url = "http://127.0.0.1:9880/"
             params = {
                 "text": sample_text,
-                "text_language": req.text_lang,
+                "text_language": "多语种混合",
                 "prompt_text": req.ref_text,
-                "prompt_language": req.ref_lang,
+                "prompt_language": "多语种混合",
                 "prompt_audio": req.ref_audio_path
             }
             async with httpx.AsyncClient(timeout=120.0) as client:

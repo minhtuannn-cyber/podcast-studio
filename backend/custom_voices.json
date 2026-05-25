@@ -1,0 +1,40 @@
+[
+  {
+    "id": "custom_sovits_1779711686",
+    "name": "MeVoice",
+    "engine": "gpt-sovits",
+    "style": "Giọng Clone",
+    "gender": "unknown",
+    "tags": [
+      "AI Clone",
+      "Custom"
+    ],
+    "voice": "custom_sovits_1779711686",
+    "rate": "+0%",
+    "pitch": "+0Hz",
+    "description": "",
+    "ref_audio_path": "/Users/nnminhtuan/.gemini/antigravity/scratch/podcast-studio/backend/sovits_refs/custom_sovits_1779711686.mp3",
+    "ref_text": "Giáo viên chủ nhiệm lớp là người chịu trách nhiệm đối với ",
+    "ref_lang": "vi",
+    "text_lang": "vi"
+  },
+  {
+    "id": "custom_sovits_1779716895",
+    "name": "MeVoice",
+    "engine": "gpt-sovits",
+    "style": "Giọng Clone",
+    "gender": "unknown",
+    "tags": [
+      "AI Clone",
+      "Custom"
+    ],
+    "voice": "custom_sovits_1779716895",
+    "rate": "+0%",
+    "pitch": "+0Hz",
+    "description": "",
+    "ref_audio_path": "/Users/nnminhtuan/.gemini/antigravity/scratch/podcast-studio/backend/sovits_refs/custom_sovits_1779716895.mp3",
+    "ref_text": "Giáo viên chủ nhiệm là người chịu trách nhiệm ",
+    "ref_lang": "vi",
+    "text_lang": "vi"
+  }
+]
