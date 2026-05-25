@@ -3,3 +3,4 @@ uvicorn
 pydantic
 edge-tts
 httpx>=0.24.0
+python-multipart>=0.0.9

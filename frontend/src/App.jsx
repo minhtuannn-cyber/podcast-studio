@@ -57,6 +57,16 @@ function App() {
   const bgmAudioRef = useRef(null);
   const playAllAbort = useRef(false);
 
+  // Custom Voice State
+  const [customVoices, setCustomVoices] = useState([]);
+  const [uploadName, setUploadName] = useState('');
+  const [uploadText, setUploadText] = useState('');
+  const [uploadFile, setUploadFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // All voices combined
+  const ALL_VOICES = [...VOICE_PRESETS, ...customVoices];
+
   // Saved projects (local state for demo)
   const [projects, setProjects] = useState([
     { id: 1, name: 'Dự án chưa có tiêu đề', preview: '', updatedAt: 'Hôm nay' }
@@ -73,7 +83,14 @@ function App() {
     return () => document.removeEventListener('mousedown', handler);
   }, [showVoiceModal]);
 
-  const getPreset = (id) => VOICE_PRESETS.find(p => p.id === id) || VOICE_PRESETS[0];
+  useEffect(() => {
+    fetch(`${API}/api/voices`)
+      .then(r => r.json())
+      .then(data => setCustomVoices(data.voices || []))
+      .catch(e => console.error("Could not fetch custom voices", e));
+  }, []);
+
+  const getPreset = (id) => ALL_VOICES.find(p => p.id === id) || ALL_VOICES[0];
 
   const updateBlock = useCallback((id, updates) => {
     setBlocks(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
@@ -432,8 +449,49 @@ function App() {
               <div className="clone-icon">🎙️</div>
               <h3>Thêm Giọng Nói Mới</h3>
               <p>Tải lên một đoạn ghi âm dài 3-10 giây để AI sao chép giọng điệu và chất giọng của bạn.</p>
-              <button className="btn-upload" disabled>Tải lên Audio (.wav, .mp3)</button>
-              <p className="text-muted" style={{marginTop: '10px', fontSize: '12px'}}>(Tính năng đang được phát triển - Đợi API từ backend)</p>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                if (!uploadFile || !uploadName.trim() || !uploadText.trim()) return;
+                setIsUploading(true);
+                const fd = new FormData();
+                fd.append('name', uploadName);
+                fd.append('ref_text', uploadText);
+                fd.append('file', uploadFile);
+                try {
+                  const res = await fetch(`${API}/api/voices`, { method: 'POST', body: fd });
+                  if (!res.ok) throw new Error('Failed to upload');
+                  const data = await res.json();
+                  setCustomVoices(prev => [...prev, data.voice]);
+                  setUploadName(''); setUploadText(''); setUploadFile(null);
+                  alert('Tạo giọng clone thành công! Hãy vào tab Đọc văn bản để sử dụng.');
+                } catch (e) {
+                  alert('Lỗi: ' + e.message);
+                }
+                setIsUploading(false);
+              }} className="clone-form">
+                <input type="text" placeholder="Tên giọng nói (VD: Giọng Tự Nhiên)" value={uploadName} onChange={e => setUploadName(e.target.value)} required />
+                <textarea placeholder="Nội dung văn bản mà đoạn ghi âm đang nói..." value={uploadText} onChange={e => setUploadText(e.target.value)} required rows={3}></textarea>
+                <input type="file" accept="audio/wav,audio/mp3,audio/mpeg,audio/m4a" onChange={e => setUploadFile(e.target.files[0])} required />
+                <button type="submit" className="btn-upload" disabled={isUploading}>{isUploading ? 'Đang tải lên...' : 'Tạo Giọng'}</button>
+              </form>
+            </div>
+            
+            <div className="custom-voices-list">
+              <h2 style={{marginTop: '40px', color: '#fff'}}>Giọng đã tạo</h2>
+              {customVoices.length === 0 ? (
+                <p className="text-muted">Bạn chưa tạo giọng nào.</p>
+              ) : (
+                <div className="cv-grid">
+                  {customVoices.map(cv => (
+                    <div key={cv.id} className="cv-card">
+                      <span className="cv-icon">🔊</span>
+                      <strong>{cv.name}</strong>
+                      <span className="engine-badge sovits" style={{marginTop: '8px', display: 'inline-block'}}>GPT-SoVITS</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -448,7 +506,7 @@ function App() {
               <button className="vm-close" onClick={() => { setShowVoiceModal(false); stopPreview(); }}>✕</button>
             </div>
             <div className="vm-list">
-              {VOICE_PRESETS.map(preset => {
+              {ALL_VOICES.map(preset => {
                 const currentVoiceId = voiceModalTarget === 'GLOBAL' ? globalVoiceId : blocks.find(b => b.id === voiceModalTarget)?.voiceId;
                 const isSelected = currentVoiceId === preset.id;
                 const isPreviewing = previewingId === preset.id;
