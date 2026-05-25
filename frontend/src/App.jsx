@@ -10,7 +10,6 @@ const VOICE_PRESETS = [
   { id: 'namminh-adam', name: 'Adam', style: 'Hài hước', gender: 'nam', tags: ['Nam', 'Hài hước', 'Nhanh', 'Miền Bắc'], voice: 'vi-VN-NamMinhNeural', rate: '+25%', pitch: '+0Hz', description: 'Giọng nam cực nhanh, nhí nhảnh, tấu hài.' },
   { id: 'hoaimy-slow', name: 'Truyện Audio', style: 'Kể chuyện', gender: 'nữ', tags: ['Nữ', 'Truyện', 'Chậm rãi', 'Miền Bắc'], voice: 'vi-VN-HoaiMyNeural', rate: '-5%', pitch: '-3Hz', description: 'Giọng nữ nhẹ nhàng, phù hợp đọc truyện, sách nói.' },
   { id: 'namminh-news', name: 'Quang Anh', style: 'Thời sự VTV', gender: 'nam', tags: ['Nam', 'Tin tức', 'Thời sự', 'Miền Bắc'], voice: 'vi-VN-NamMinhNeural', rate: '+3%', pitch: '-3Hz', description: 'Style thời sự, VTV, đọc báo chuyên nghiệp.' },
-  { id: 'sovits-clone-1', name: 'Giọng Vlogs (AI)', engine: 'gpt-sovits', style: 'Clone Voice', gender: 'nam', tags: ['AI Clone', 'Tự nhiên'], voice: 'sovits-1', rate: '+0%', pitch: '+0Hz', description: 'Giọng AI cực kỳ tự nhiên, sao chép bằng GPT-SoVITS.', ref_audio_path: 'sovits_refs/demo.wav', ref_text: 'Đây là giọng mẫu.', ref_lang: 'vi', text_lang: 'vi' }
 ];
 
 const API = 'http://127.0.0.1:8000';
@@ -19,7 +18,6 @@ const SIDEBAR_ITEMS = [
   { id: 'editor', icon: '📝', label: 'Đọc văn bản' },
   { id: 'projects', icon: '📁', label: 'Dự án của bạn' },
   { id: 'voices', icon: '🗣️', label: 'Giọng nói cộng đồng' },
-  { id: 'my-voices', icon: '🎤', label: 'Giọng nói của bạn' },
 ];
 
 const BGM_TEMPLATES = [
@@ -57,15 +55,8 @@ function App() {
   const bgmAudioRef = useRef(null);
   const playAllAbort = useRef(false);
 
-  // Custom Voice State
-  const [customVoices, setCustomVoices] = useState([]);
-  const [uploadName, setUploadName] = useState('');
-  const [uploadText, setUploadText] = useState('');
-  const [uploadFile, setUploadFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  
   // All voices combined
-  const ALL_VOICES = [...VOICE_PRESETS, ...customVoices];
+  const ALL_VOICES = [...VOICE_PRESETS];
 
   // Saved projects (local state for demo)
   const [projects, setProjects] = useState([
