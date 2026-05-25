@@ -140,7 +140,7 @@ async def generate_audio(req: GenerateRequest):
                 "text_language": req.text_lang,
                 "prompt_text": req.ref_text,
                 "prompt_language": req.ref_lang,
-                "prompt_audio": req.ref_audio_path
+                "refer_wav_path": req.ref_audio_path
             }
             async with httpx.AsyncClient(timeout=120.0) as client:
                 res = await client.get(url, params=params)
@@ -186,7 +186,7 @@ async def preview_voice(req: GenerateRequest):
                 "text_language": "多语种混合",
                 "prompt_text": req.ref_text,
                 "prompt_language": "多语种混合",
-                "prompt_audio": req.ref_audio_path
+                "refer_wav_path": req.ref_audio_path
             }
             async with httpx.AsyncClient(timeout=120.0) as client:
                 res = await client.get(url, params=params)
