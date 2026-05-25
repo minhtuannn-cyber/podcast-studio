@@ -36,5 +36,43 @@
     "ref_text": "Giáo viên chủ nhiệm là người chịu trách nhiệm ",
     "ref_lang": "vi",
     "text_lang": "vi"
+  },
+  {
+    "id": "custom_sovits_1779721187",
+    "name": "Me2",
+    "engine": "gpt-sovits",
+    "style": "Giọng Clone",
+    "gender": "unknown",
+    "tags": [
+      "AI Clone",
+      "Custom"
+    ],
+    "voice": "custom_sovits_1779721187",
+    "rate": "+0%",
+    "pitch": "+0Hz",
+    "description": "",
+    "ref_audio_path": "/Users/nnminhtuan/.gemini/antigravity/scratch/podcast-studio/backend/sovits_refs/custom_sovits_1779721187.wav",
+    "ref_text": "Giáo viên chủ nhiệm là người chịu trách nhiệm",
+    "ref_lang": "vi",
+    "text_lang": "vi"
+  },
+  {
+    "id": "custom_sovits_1779721603",
+    "name": "1",
+    "engine": "gpt-sovits",
+    "style": "Giọng Clone",
+    "gender": "unknown",
+    "tags": [
+      "AI Clone",
+      "Custom"
+    ],
+    "voice": "custom_sovits_1779721603",
+    "rate": "+0%",
+    "pitch": "+0Hz",
+    "description": "",
+    "ref_audio_path": "/Users/nnminhtuan/.gemini/antigravity/scratch/podcast-studio/backend/sovits_refs/custom_sovits_1779721603.mp3",
+    "ref_text": "Chào mừng quý vị khán giả đang theo dõi bản tin thời sự tối của đài truyền hình việt nam",
+    "ref_lang": "vi",
+    "text_lang": "vi"
   }
 ]

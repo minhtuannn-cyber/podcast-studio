@@ -137,9 +137,9 @@ async def generate_audio(req: GenerateRequest):
             url = "http://127.0.0.1:9880/"
             params = {
                 "text": final_text,
-                "text_language": "多语种混合",
+                "text_language": "英文",
                 "prompt_text": req.ref_text,
-                "prompt_language": "多语种混合",
+                "prompt_language": "英文",
                 "refer_wav_path": req.ref_audio_path,
                 "cut_punc": ".,;:?!"
             }
@@ -184,9 +184,9 @@ async def preview_voice(req: GenerateRequest):
             url = "http://127.0.0.1:9880/"
             params = {
                 "text": sample_text,
-                "text_language": "多语种混合",
+                "text_language": "英文",
                 "prompt_text": req.ref_text,
-                "prompt_language": "多语种混合",
+                "prompt_language": "英文",
                 "refer_wav_path": req.ref_audio_path,
                 "cut_punc": ".,;:?!"
             }
