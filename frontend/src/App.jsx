@@ -10,6 +10,7 @@ const VOICE_PRESETS = [
   { id: 'namminh-adam', name: 'Adam', style: 'Hài hước', gender: 'nam', tags: ['Nam', 'Hài hước', 'Nhanh', 'Miền Bắc'], voice: 'vi-VN-NamMinhNeural', rate: '+25%', pitch: '+0Hz', description: 'Giọng nam cực nhanh, nhí nhảnh, tấu hài.' },
   { id: 'hoaimy-slow', name: 'Truyện Audio', style: 'Kể chuyện', gender: 'nữ', tags: ['Nữ', 'Truyện', 'Chậm rãi', 'Miền Bắc'], voice: 'vi-VN-HoaiMyNeural', rate: '-5%', pitch: '-3Hz', description: 'Giọng nữ nhẹ nhàng, phù hợp đọc truyện, sách nói.' },
   { id: 'namminh-news', name: 'Quang Anh', style: 'Thời sự VTV', gender: 'nam', tags: ['Nam', 'Tin tức', 'Thời sự', 'Miền Bắc'], voice: 'vi-VN-NamMinhNeural', rate: '+3%', pitch: '-3Hz', description: 'Style thời sự, VTV, đọc báo chuyên nghiệp.' },
+  { id: 'namminh-tuan', name: 'Tuấn Tiền Tỉ (Simulated)', style: 'Bình luận viên', gender: 'nam', tags: ['Nam', 'Nhanh', 'Năng lượng', 'Miền Bắc'], voice: 'vi-VN-NamMinhNeural', rate: '+35%', pitch: '+5Hz', description: 'Giọng đọc cực nhanh, năng lượng cao, nhại theo phong cách Tuấn Tiền Tỉ.' }
 ];
 
 const API = 'http://127.0.0.1:8000';
